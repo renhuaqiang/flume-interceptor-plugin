@@ -112,7 +112,7 @@ public class SearchAndAppendInterceptor implements Interceptor {
   public static class Builder implements Interceptor.Builder {
     private static final String SEARCH_PAT_KEY = "searchPattern";
     //追加内容的分隔符默认为"|"
-    private static final String APPEND_DELIMITER_KEY = "appendSeparator";
+    private static final String APPEND_DELIMITER_KEY = "appendDelimiter";
     private static final String CHARSET_KEY = "charset";
 
     //修改为String类型，可以添加多个匹配正则表达式
