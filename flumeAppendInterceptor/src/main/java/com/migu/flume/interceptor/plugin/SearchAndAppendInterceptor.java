@@ -54,14 +54,15 @@ public class SearchAndAppendInterceptor implements Interceptor {
 
   //修改为String类型，可以添加多个匹配正则表达式
   private final String searchPattern;
-  private final String replaceString;
+  //自定义配置参数，定界符
+  private final String appendDelimiterString;
   private final Charset charset;
 
   private SearchAndAppendInterceptor(String searchPattern,
-                                     String replaceString,
+                                     String appendDelimiterString,
                                      Charset charset) {
     this.searchPattern = searchPattern;
-    this.replaceString = replaceString;
+    this.appendDelimiterString = appendDelimiterString;
     this.charset = charset;
   }
 
@@ -85,9 +86,10 @@ public class SearchAndAppendInterceptor implements Interceptor {
       Pattern pattern = Pattern.compile(searchRegexs[i]);
       Matcher matcher = pattern.matcher(origBody);
       if(matcher.find()&&matcher.groupCount()>0){
-        appendString.append("|"+matcher.group(1));
+        //提取第一个括号中匹配的内容
+        appendString.append(appendDelimiterString+matcher.group(1));
       }else{
-        appendString.append("|"+"NULL");
+        appendString.append(appendDelimiterString+"NULL");
       }
     }
 
@@ -109,12 +111,13 @@ public class SearchAndAppendInterceptor implements Interceptor {
 
   public static class Builder implements Interceptor.Builder {
     private static final String SEARCH_PAT_KEY = "searchPattern";
-    private static final String REPLACE_STRING_KEY = "replaceString";
+    //追加内容的分隔符默认为"|"
+    private static final String APPEND_DELIMITER_KEY = "appendSeparator";
     private static final String CHARSET_KEY = "charset";
 
     //修改为String类型，可以添加多个匹配正则表达式
     private String searchRegex;
-    private String replaceString;
+    private String appendDelimiterString;
     private Charset charset = Charsets.UTF_8;
 
     @Override
@@ -124,11 +127,10 @@ public class SearchAndAppendInterceptor implements Interceptor {
           "Must supply a valid search pattern " + SEARCH_PAT_KEY +
           " (may not be empty)");
 
-      replaceString = context.getString(REPLACE_STRING_KEY);
-      // Empty replacement String value or if the property itself is not present
-      // assign empty string as replacement
-      if (replaceString == null) {
-        replaceString = "";
+      appendDelimiterString = context.getString(APPEND_DELIMITER_KEY);
+      //如果定界符为空赋值默认定界符"|"
+      if (appendDelimiterString == null) {
+        appendDelimiterString = "|";
       }
 
       //正则表达式改为在intercept函数中编译，方便处理多个正则表达式串
@@ -145,9 +147,9 @@ public class SearchAndAppendInterceptor implements Interceptor {
     public Interceptor build() {
       Preconditions.checkNotNull(searchRegex,
                                  "Regular expression search pattern required");
-      Preconditions.checkNotNull(replaceString,
+      Preconditions.checkNotNull(appendDelimiterString,
                                  "Replacement string required");
-      return new SearchAndAppendInterceptor(searchRegex, replaceString, charset);
+      return new SearchAndAppendInterceptor(searchRegex, appendDelimiterString, charset);
     }
   }
 }
