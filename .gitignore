@@ -1,1 +1,4 @@
+.gitinore
 flumeAppendInterceptor/.idea/
+flumeAppendInterceptor/target/
+flumeAppendInterceptor/flumeAppendInterceptor.iml
